@@ -1,5 +1,6 @@
+import java.util.ArrayList;
 
-public abstract class Conta implements IConta {
+public abstract class Conta {
 	
 	private static final int AGENCIA_PADRAO = 1;
 	private static int SEQUENCIAL = 1;
@@ -8,6 +9,7 @@ public abstract class Conta implements IConta {
 	protected int numero;
 	protected double saldo;
 	protected Cliente cliente;
+	public ArrayList<Transacao> transacoes = new ArrayList<>();
 
 	public Conta(Cliente cliente) {
 		this.agencia = Conta.AGENCIA_PADRAO;
@@ -15,20 +17,20 @@ public abstract class Conta implements IConta {
 		this.cliente = cliente;
 	}
 
-	@Override
 	public void sacar(double valor) {
 		saldo -= valor;
+		transacoes.add(new Transacao(saldo, valor, "Saque"));
 	}
 
-	@Override
 	public void depositar(double valor) {
 		saldo += valor;
+		transacoes.add(new Transacao(saldo, valor, "Depósito"));
 	}
 
-	@Override
-	public void transferir(double valor, IConta contaDestino) {
-		this.sacar(valor);
+	public void transferir(double valor, Conta contaDestino) {
+		saldo -= valor;
 		contaDestino.depositar(valor);
+		transacoes.add(new TransacaoTransferencia(saldo, valor, this, contaDestino));
 	}
 
 	public int getAgencia() {
@@ -43,10 +45,18 @@ public abstract class Conta implements IConta {
 		return saldo;
 	}
 
-	protected void imprimirInfosComuns() {
+	public void imprimirInfo()
+	{
 		System.out.println(String.format("Titular: %s", this.cliente.getNome()));
 		System.out.println(String.format("Agencia: %d", this.agencia));
 		System.out.println(String.format("Numero: %d", this.numero));
 		System.out.println(String.format("Saldo: %.2f", this.saldo));
+	}
+
+	public void imprimirExtrato() {
+		imprimirInfo();
+		System.out.println("\nTransações: ");
+		for (int i = 0; i < transacoes.size(); i++)
+			transacoes.get(i).imprimir();
 	}
 }
